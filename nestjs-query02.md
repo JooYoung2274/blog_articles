@@ -117,6 +117,8 @@ import {
 @Entity()
 // 아래처럼 @Authorize()를 추가해 자동생성 되는 모든 CRUD에 인증 관련 기을 추가해줄 수 있다.
 @Authorize({ authorize: (context: UserContext) => ({ userId: { eq: context.req.user.id } }) })
+// BoardEntity와 Relation에 UserDTO가 있을 때
+@FilterableRelation('owner', () => UserDTO)
 @ObjectType('Board')
 export class BoardEntity {
   @PrimaryGeneratedColumn()
