@@ -4,7 +4,7 @@
 
 <br>
 
-이후에 티스토리 open api가 서비스를 종료한다는 얘기를 듣고 어떻게 우회해서 cli 환경에서 업로드할수는 없을까 생각하다가 좋은 아이디어가 생각나 구현해 배포했다. 먼저 npm 배포 방법에 대해서 설명하면
+이후에 티스토리 open api가 서비스를 종료한다는 얘기를 듣고 어떻게 우회해서 cli 환경에서 업로드할수는 없을까 생각하다가 좋은 아이디어가 생각나 구현해 배포했다. 먼저 내가 했던 npm 배포 방식은 아래와 같다.
 
 ### 1. npm 배포
 
@@ -20,7 +20,7 @@ $ npm adduser
 
 #### 1-3. 배포할 코드 작성
 
-다른 블로그들을 보면 추천하는 폴더구조가 나와있다. 물론 해당 폴더구조로 진행하면 통일성있게 작업이 가능하다. 하지만 어차피 나는 CLI 환경에서 구동되는 라이브러리를 만들 예정이어서 시작 파일 경로만 잘 설정하면 별 문제없이 배포 가능했다.
+다른 블로그들을 보면 추천하는 폴더구조가 나와있다. 물론 추천하는 폴더구조로 진행하면 통일성있게 작업이 가능하지만 어차피 나는 CLI 환경에서 구동되는 라이브러리를 만들 예정이어서 시작 파일 경로만 잘 설정하면 별 문제없이 배포 가능했다.
 
 
 먼저 아래 명령어로 package.json을 생성해준다.
@@ -86,6 +86,8 @@ tsconfig.json, tsconfig.build.json도 당연히 추가해줬다.
 $ npm publish --access=public
 ```
 
+<br>
+
 
 ### 2. 버전 업데이트
 
@@ -93,4 +95,34 @@ $ npm publish --access=public
 
 만약 버전을 변경안할 경우 업데이트 배포 자체가 안되니 꼭 변경해줘야한다. 
 
-(작성중)
+
+<br>
+
+### 3. nestjs에서 module로 npm 배포하기
+
+nestjs에서 제공하는 라이브러리들을 보면 거의 module을 주입해 사용하게 되는데 nestjs에서 제공하는 DynamicModule 이용해 작성하면 된다.
+
+```typescript
+import { Module, DynamicModule } from '@nestjs/common';
+import { DirectSendService } from './direct-send.service';
+import { DIRECT_SEND_MODULE_OPTIONS } from './direct-send.config';
+
+@Module({})
+export class DirectSendModule {
+  static register(options: DIRECT_SEND_MODULE_OPTIONS): DynamicModule {
+    return {
+      module: DirectSendModule,
+      providers: [
+        {
+          provide: DirectSendService,
+          useValue: new DirectSendService(options),
+        },
+      ],
+      exports: [DirectSendService],
+    };
+  }
+}
+
+``` 
+
+기타 서비스 로직은 따로 작성 후 providers에 적용해주면 된다.
